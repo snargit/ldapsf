@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name ldapsf)
 project(${name})
 
-set(CMAKE_CXX_FLAGS "-std=c++11")
+#set(CMAKE_CXX_FLAGS "-std=c++11")
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 
@@ -21,7 +21,7 @@ add_library(${name} SHARED ldap_sf_ast.cpp
 
 target_link_libraries(${name} ${ICU_LIBRARIES})
 
-install(TARGETS ${name} LIBRARY DESTINATION lib${LIB_SUFFIX})
+#install(TARGETS ${name} LIBRARY DESTINATION lib/)
 install(FILES ldap_sf_ast.h
               ldap_sf_grammar.h
               ldap_sf_eval.h

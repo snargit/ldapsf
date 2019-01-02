@@ -1,51 +1,31 @@
-/*
- * =============================================================================
- *
- *       Filename:  ldap_sf_eval.h
- *
- *    Description:  LDAP Search Filter evaluation
- *
- *        Version:  1.0
- *        Created:  25.02.2015 12:57:57
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexey Radkov (), 
- *        Company:  
- *
- * =============================================================================
- */
+#pragma once
 
-#ifndef LDAP_SF_EVAL_H
-#define LDAP_SF_EVAL_H
-
-#include <string>
-#include <utility>
-#include <memory>
-#include <unicode/coll.h>
 #include "ldap_sf_ast.h"
 #include "ldap_records.h"
 
+#include <unicode/coll.h>
 
-namespace  ldap
-{
-namespace  sf
+#include <memory>
+#include <string>
+#include <utility>
+
+namespace ldap { namespace sf
 {
 
-class  Eval
+class Eval
 {
   public:
-    typedef icu::Collator  Collator;
-    typedef icu::Locale    Locale;
+    using Collator = icu::Collator;
+    using Locale = icu::Locale;
 
   private:
-    typedef std::pair< RecordListPtr, RecordListPtr >  RecordListPartition;
+    using RecordListPartition = std::pair<RecordListPtr, RecordListPtr>;
 
   public:
     RecordListPtr  operator()( const Node &  node, const RecordList &  records,
-                               Collator::ECollationStrength  strength =
+                               Collator::ECollationStrength strength =
                                                               Collator::PRIMARY,
-                               const Locale &  loc = getDefaultLocale() ) const
+                               const Locale & loc = getDefaultLocale() ) const
     {
       return eval( node, records, strength, loc ).first;
     }
@@ -67,11 +47,8 @@ class  Eval
                          const Locale &  loc ) const;
 
   public:
-    static const Locale &  getDefaultLocale( void );
+    static const Locale & getDefaultLocale();
 };
 
 }   // namespace sf
 }   // namespace ldap
-
-#endif
-

@@ -1,33 +1,16 @@
-/*
- * =============================================================================
- *
- *       Filename:  ldap_sf_eval.cpp
- *
- *    Description:  LDAP Search Filter evaluation
- *
- *        Version:  1.0
- *        Created:  25.02.2015 12:57:57
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexey Radkov (), 
- *        Company:  
- *
- * =============================================================================
- */
+#include "ldap_sf_eval.h"
 
 #include <algorithm>
 #include <iterator>
-#include <utility>
 #include <stdexcept>
-#include <boost/variant/get.hpp>
+#include <utility>
+
 #include <boost/assert.hpp>
+#include <boost/variant/get.hpp>
 #include <unicode/locid.h>
 #include <unicode/stsearch.h>
-#include "ldap_sf_eval.h"
 
-using namespace  icu;
-
+using namespace icu;
 
 namespace
 {
@@ -37,9 +20,7 @@ namespace
 }
 
 
-namespace  ldap
-{
-namespace  sf
+namespace ldap { namespace sf
 {
 
 Eval::RecordListPartition  Eval::eval( const Node &  node,
@@ -195,83 +176,88 @@ Eval::RecordListPartition Eval::evalItem( const ItemPtr  item,
 }
 
 
-bool  Eval::testSubstring( const ValueListMore &  values,
-                           const std::string &  s,
+bool  Eval::testSubstring( const ValueListMore & values,
+                           const std::string & s,
                            Collator::ECollationStrength  strength,
                            const Locale &  loc ) const
 {
   BOOST_ASSERT( ! values.data_.empty() );
 
-  auto           begin( values.data_.begin() );
-  auto           end( values.data_.end() );
-  UnicodeString  su( UnicodeString::fromUTF8( StringPiece( s ) ) );
-  std::size_t    len( su.length() );
-  std::size_t    pos( 0 );
-  UErrorCode     status( U_ZERO_ERROR );
+  auto begin = std::cbegin(values.data_);
+  auto end =  std::cend(values.data_);
+  auto su = UnicodeString::fromUTF8(StringPiece(s));
+  auto pos = static_cast<int32_t>(0);
+  auto len = su.length();
+  UErrorCode status( U_ZERO_ERROR );
 
   if ( ! values.has_front_any_ )
   {
-    UnicodeString  vu( UnicodeString::fromUTF8( StringPiece( *begin ) ) );
-    StringSearch   it( vu, su, loc, NULL, status );
+    auto vu = UnicodeString::fromUTF8(StringPiece(*begin));
+    StringSearch it(vu, su, loc, nullptr, status);
 
-    if ( U_FAILURE( status ) )
-      throw std::runtime_error( stsearch_errmsg );
+    if (U_FAILURE(status)) {
+        throw std::runtime_error(stsearch_errmsg);
+    }
 
-    it.getCollator()->setStrength( strength );
+    it.getCollator()->setStrength(strength);
 
-    int32_t        su_curpos( it.first( status ) );
+    auto const su_curpos = it.first(status);
 
-    if ( su_curpos != 0 )
-      return false;
+    if (su_curpos != 0) {
+        return false;
+    }
 
     pos = it.getMatchedLength();
     len -= pos;
 
-    begin = std::next( begin );
+    begin = std::next(begin);
   }
 
-  if ( ! values.has_back_any_ )
+  if (!values.has_back_any_)
   {
-    end = std::prev( end );
+    end = std::prev(end);
 
-    UnicodeString  vu( UnicodeString::fromUTF8( StringPiece( *end ) ) );
-    StringSearch   it( vu, UnicodeString( su, pos ), loc, NULL, status );
+    auto vu = UnicodeString::fromUTF8(StringPiece(*end));
+    StringSearch it(vu, UnicodeString( su, pos ), loc, nullptr, status);
 
     if ( U_FAILURE( status ) )
       throw std::runtime_error( stsearch_errmsg );
 
     it.getCollator()->setStrength( strength );
 
-    int32_t        su_curpos( it.last( status ) );
+    auto const su_curpos = it.last(status);
 
-    if ( su_curpos == USEARCH_DONE )
-      return false;
+    if (su_curpos == USEARCH_DONE) {
+        return false;
+    }
 
-    int32_t        su_curlen( it.getMatchedLength() );
+    auto const su_curlen = it.getMatchedLength();
 
-    if ( su_curpos != len - su_curlen )
-      return false;
+    if (su_curpos != (len - su_curlen)) {
+        return false;
+    }
 
     len -= su_curlen;
   }
 
   for ( auto  k( begin ); k != end; ++k )
   {
-    UnicodeString  vu( UnicodeString::fromUTF8( StringPiece( *k ) ) );
-    StringSearch   it( vu, UnicodeString( su, pos, len ), loc, NULL, status );
+    auto vu = UnicodeString::fromUTF8(StringPiece(*k));
+    StringSearch it(vu, UnicodeString( su, pos, len ), loc, nullptr, status);
 
-    if ( U_FAILURE( status ) )
-      throw std::runtime_error( stsearch_errmsg );
+    if (U_FAILURE(status)) {
+        throw std::runtime_error(stsearch_errmsg);
+    }
 
-    it.getCollator()->setStrength( strength );
+    it.getCollator()->setStrength(strength);
 
-    int32_t        su_curpos( it.first( status ) );
+    auto const su_curpos( it.first( status ) );
 
-    if ( su_curpos == USEARCH_DONE )
-      return false;
+    if (su_curpos == USEARCH_DONE) {
+        return false;
+    }
 
-    std::size_t    shift( su_curpos + it.getMatchedLength() );
-
+    auto const shift = su_curpos + it.getMatchedLength();
     pos += shift;
     len -= shift;
   }
@@ -280,7 +266,7 @@ bool  Eval::testSubstring( const ValueListMore &  values,
 }
 
 
-const Eval::Locale &  Eval::getDefaultLocale( void )
+const Eval::Locale & Eval::getDefaultLocale()
 {
   return Locale::getDefault();
 }

@@ -1,40 +1,17 @@
-/*
- * =============================================================================
- *
- *       Filename:  ldap_sf_ast.h
- *
- *    Description:  LDAP Search Filter AST
- *
- *        Version:  1.0
- *        Created:  25.02.2015 12:57:57
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexey Radkov (), 
- *        Company:  
- *
- * =============================================================================
- */
+#pragma once
 
-#ifndef LDAP_SF_AST_H
-#define LDAP_SF_AST_H
-
-#include <vector>
-#include <list>
-#include <memory>
+#include <boost/variant.hpp>
 #include <boost/variant/recursive_variant.hpp>
 
+#include <list>
+#include <memory>
+#include <string>
+#include <vector>
 
-namespace  ldap
+namespace ldap { namespace sf
 {
-namespace  sf
-{
 
-using boost::variant;
-using boost::recursive_wrapper;
-
-
-enum  FilterComp
+enum FilterComp
 {
   FC_Uninitialized,
   FC_And,
@@ -42,8 +19,7 @@ enum  FilterComp
   FC_Not
 };
 
-
-enum  ItemType
+enum ItemType
 {
   IT_Unknown,
   IT_Simple,
@@ -52,8 +28,7 @@ enum  ItemType
   IT_Extensible
 };
 
-
-enum  SimpleItemOp
+enum SimpleItemOp
 {
   SIO_Uninitialized,
   SIO_Equal,
@@ -62,31 +37,20 @@ enum  SimpleItemOp
   SIO_Less
 };
 
+struct Subtree;
+struct Item;
 
-struct  Subtree;
+using Tree = ::boost::recursive_wrapper<Subtree>;
+using ItemPtr = std::shared_ptr<Item>;
+using Node = ::boost::variant<Tree, ItemPtr>;
+using NodeList = std::vector<Node>;
+using Value = std::string;
+using Attr = std::string;
+using MatchingRule = std::string;
+using AttrOptionsList = std::list<std::string>;
+using ValueList = std::vector<std::string>;
 
-struct  Item;
-
-typedef recursive_wrapper< Subtree >   Tree;
-
-typedef std::shared_ptr< Item >        ItemPtr;
-
-typedef variant< Tree, ItemPtr >       Node;
-
-typedef std::vector< Node >            NodeList;
-
-typedef std::string                    Value;
-
-typedef std::string                    Attr;
-
-typedef std::string                    MatchingRule;
-
-typedef std::list< std::string >       AttrOptionsList;
-
-typedef std::vector< std::string >     ValueList;
-
-
-struct  ValueListMore
+struct ValueListMore
 {
   ValueListMore() : has_front_any_( true ), has_back_any_( true )
   {}
@@ -137,6 +101,3 @@ struct  Subtree
 
 }   // namespace sf
 }   // namespace ldap
-
-#endif
-

@@ -1,40 +1,21 @@
-/*
- * =============================================================================
- *
- *       Filename:  ldap_sf_grammar.h
- *
- *    Description:  LDAP Search Filter grammar
- *
- *        Version:  1.0
- *        Created:  25.02.2015 12:57:57
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexey Radkov (), 
- *        Company:  
- *
- * =============================================================================
- */
-
-#ifndef LDAP_SF_GRAMMAR_H
-#define LDAP_SF_GRAMMAR_H
-
+#pragma once
+#ifndef BOOST_SPIRIT_UNICODE
 #define BOOST_SPIRIT_UNICODE
+#endif
 
-#include <string>
-#include <vector>
-#include <memory>
-#include <boost/spirit/include/qi.hpp>
+#include "ldap_sf_ast.h"
+
+#include <boost/optional.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_function.hpp>
-#include <boost/optional.hpp>
-#include "ldap_sf_ast.h"
+#include <boost/spirit/include/qi.hpp>
 
+#include <memory>
+#include <string>
+#include <vector>
 
-namespace  ldap
-{
-namespace  sf
+namespace  ldap { namespace sf
 {
 
 using namespace boost::spirit;
@@ -47,17 +28,17 @@ using boost::spirit::unicode::space_type;
 using boost::spirit::unicode::alpha;
 using boost::spirit::unicode::alnum;
 using boost::spirit::unicode::char_;
-using boost::spirit::unused_type;
 using boost::spirit::_1;
 using boost::spirit::_2;
 using boost::spirit::_3;
 
-
-struct  Compiler
+struct Compiler
 {
-  template  < typename  A, typename  B = unused_type,
-              typename  C = unused_type, typename  D = unused_type >
-  struct  result { typedef void  type; };
+  template <typename A,
+            typename B = ::boost::spirit::unused_type,
+            typename C = ::boost::spirit::unused_type,
+            typename D = ::boost::spirit::unused_type>
+  struct result { using type = void; };
 
   void  operator()( NodeList &  nodes, Node &  node ) const;
 
@@ -80,9 +61,8 @@ struct  Compiler
                     boost::optional< Value > &  value_last ) const;
 };
 
-
-template  < typename  Iterator >
-struct  Grammar : grammar< Iterator, Node(), space_type >
+template<typename  Iterator>
+struct Grammar : grammar<Iterator, Node(), space_type>
 {
   Grammar();
 
@@ -173,6 +153,3 @@ Grammar< Iterator >::Grammar() : Grammar::base_type( filter )
 
 }   // namespace sf
 }   // namespace ldap
-
-#endif
-
