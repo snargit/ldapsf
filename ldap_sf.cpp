@@ -6,7 +6,7 @@
 namespace ldap
 {
 
-sf::Node SearchFilter::buildQuery( const std::string &  query ) const
+sf::Node SearchFilter::buildQuery(const std::string & query) const
 {
     auto begin = std::cbegin(query);
     auto end = std::cend(query);

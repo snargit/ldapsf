@@ -1,29 +1,12 @@
-/*
- * =============================================================================
- *
- *       Filename:  ldap_sf_ast.cpp
- *
- *    Description:  LDAP Search Filter AST
- *
- *        Version:  1.0
- *        Created:  25.02.2015 12:57:57
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexey Radkov (), 
- *        Company:  
- *
- * =============================================================================
- */
-
-#include <sstream>
-#include <string>
-#include <cmath>
-#include <boost/variant/get.hpp>
-#include <boost/format.hpp>
 #include "ldap_sf_ast.h"
 
+#include <cmath>
 #include <iostream>
+#include <sstream>
+#include <string>
+
+#include <boost/format.hpp>
+#include <boost/variant/get.hpp>
 
 
 namespace  ldap

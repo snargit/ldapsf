@@ -7,7 +7,7 @@
 namespace  ldap
 {
 
-class  SearchFilter
+class SearchFilter
 {
   public:
     sf::Node       buildQuery( const std::string &  query ) const;

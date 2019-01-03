@@ -52,51 +52,67 @@ using ValueList = std::vector<std::string>;
 
 struct ValueListMore
 {
-  ValueListMore() : has_front_any_( true ), has_back_any_( true )
-  {}
+    ValueListMore() noexcept :
+        has_front_any_{true},
+        has_back_any_{true}
+    {}
 
-  bool                 has_front_any_;
+    ValueListMore(ValueListMore const &) = default;
+    ValueListMore &operator=(ValueListMore const &) = default;
+    ValueListMore(ValueListMore &&) = default;
+    ValueListMore &operator=(ValueListMore &&) = default;
 
-  bool                 has_back_any_;
-
-  ValueList            data_;
+    bool      has_front_any_;
+    bool      has_back_any_;
+    ValueList data_;
 };
 
 
-struct  Item
+struct Item
 {
-  Item( ItemType  type = IT_Unknown ) : type_( type ),
-    simple_op_( SIO_Uninitialized )
-  {}
+    explicit Item(ItemType type) noexcept :
+        type_{type},
+        simple_op_{SIO_Uninitialized}
+    {}
 
-  void  print( int  level = 0 ) const;
+    Item() noexcept : Item(IT_Unknown)
+    {}
 
-  ItemType             type_;
+    Item(Item const &) = default;
+    Item &operator=(Item const &) = default;
+    Item(Item &&) = default;
+    Item &operator=(Item &&) = default;
 
-  SimpleItemOp         simple_op_;
+    void print(int level = 0) const;
 
-  Attr                 attr_;
-
-  AttrOptionsList      attr_ops_;
-
-  Value                value_;
-
-  ValueListMore        values_;
+    ItemType             type_;
+    SimpleItemOp         simple_op_;
+    Attr                 attr_;
+    AttrOptionsList      attr_ops_;
+    Value                value_;
+    ValueListMore        values_;
 };
 
 
-struct  Subtree
+struct Subtree
 {
-  Subtree( FilterComp  comp = FC_Uninitialized ) : comp_( comp )
-  {}
+    explicit Subtree(FilterComp comp) noexcept:
+        comp_{comp}
+    {}
 
-  void  print( int  level = 0 ) const;
+    Subtree() noexcept : Subtree(FC_Uninitialized)
+    {}
 
-  NodeList             children_;
+    Subtree(Subtree const &) = default;
+    Subtree &operator=(Subtree const &) = default;
+    Subtree(Subtree &&) = default;
+    Subtree &operator=(Subtree &&) = default;
 
-  FilterComp           comp_;
+    void print(int level = 0) const;
 
-  static const int     print_indent_ = 4;
+    NodeList             children_;
+    FilterComp           comp_;
+    static const int     print_indent_ = 4;
 };
 
 }   // namespace sf
