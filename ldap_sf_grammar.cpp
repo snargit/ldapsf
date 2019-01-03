@@ -9,13 +9,13 @@
 namespace  ldap { namespace  sf
 {
 
-void  Compiler::operator()(NodeList & nodes, Node & node) const
+void Compiler::operator()(NodeList & nodes, Node & node) const
 {
   nodes.emplace_back(std::move(node));
 }
 
-void  Compiler::operator()(Node & node, NodeList & nodes,
-                           FilterComp comp ) const
+void Compiler::operator()(Node & node, NodeList & nodes,
+                          FilterComp comp) const
 {
   node = Subtree{comp};
   auto & tree = boost::get<Subtree>(node);
@@ -29,8 +29,8 @@ void Compiler::operator()(Node & node, Node & nodeNest) const
   tree.children_.emplace_back(std::move(nodeNest));
 }
 
-void  Compiler::operator()(ItemPtr & item, AttrOptionsList & attrs,
-                           SimpleItemOp op, Value & value ) const
+void Compiler::operator()(ItemPtr & item, AttrOptionsList & attrs,
+                          SimpleItemOp op, Value & value) const
 {
   item = std::make_shared<Item>(IT_Simple);
   item->attr_ = std::move(attrs.front());
@@ -40,8 +40,8 @@ void  Compiler::operator()(ItemPtr & item, AttrOptionsList & attrs,
   item->value_ = std::move(value);
 }
 
-void  Compiler::operator()(AttrOptionsList & attrs, Attr & value,
-                           ::boost::optional<AttrOptionsList> & attrs_options ) const
+void Compiler::operator()(AttrOptionsList & attrs, Attr & value,
+                          ::boost::optional<AttrOptionsList> & attrs_options) const
 {
   attrs.emplace_back(std::move(value));
   if (attrs_options) {
@@ -51,31 +51,29 @@ void  Compiler::operator()(AttrOptionsList & attrs, Attr & value,
   }
 }
 
-void  Compiler::operator()(ItemPtr & item, AttrOptionsList & attrs,
-                           ValueListMore & values ) const
+void Compiler::operator()(ItemPtr & item, AttrOptionsList & attrs,
+                          ValueListMore & values) const
 {
   item = std::make_shared<Item>(values.data_.empty() ? IT_Present : IT_Substring);
   item->attr_ = std::move(attrs.front());
   std::move(std::next(std::begin(attrs)), std::end(attrs),
             std::back_inserter(item->attr_ops_));
-  item->values_ = std::move( values );
+  item->values_ = std::move(values);
 }
 
 
-void  Compiler::operator()(ValueListMore & values,
-                           boost::optional<Value> & value_first,
-                           ValueList & values_middle,
-                           boost::optional<Value> & value_last ) const
+void Compiler::operator()(ValueListMore & values,
+                          boost::optional<Value> & value_first,
+                          ValueList & values_middle,
+                          boost::optional<Value> & value_last) const
 {
-  if (value_first)
-  {
+  if (value_first) {
     values.data_.emplace_back(std::move(*value_first));
     values.has_front_any_ = false;
   }
   std::move(std::begin(values_middle), std::end(values_middle),
             std::back_inserter(values.data_));
-  if (value_last)
-  {
+  if (value_last) {
     values.data_.emplace_back(std::move(*value_last));
     values.has_back_any_ = false;
   }
