@@ -13,28 +13,28 @@ namespace ldap { namespace sf
 
 enum FilterComp
 {
-  FC_Uninitialized,
-  FC_And,
-  FC_Or,
-  FC_Not
+    FC_Uninitialized,
+    FC_And,
+    FC_Or,
+    FC_Not
 };
 
 enum ItemType
 {
-  IT_Unknown,
-  IT_Simple,
-  IT_Present,
-  IT_Substring,
-  IT_Extensible
+    IT_Unknown,
+    IT_Simple,
+    IT_Present,
+    IT_Substring,
+    IT_Extensible
 };
 
 enum SimpleItemOp
 {
-  SIO_Uninitialized,
-  SIO_Equal,
-  SIO_Approx,
-  SIO_Greater,
-  SIO_Less
+    SIO_Uninitialized,
+    SIO_Equal,
+    SIO_Approx,
+    SIO_Greater,
+    SIO_Less
 };
 
 struct Subtree;

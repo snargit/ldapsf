@@ -5,37 +5,38 @@
 
 namespace ldap
 {
+    using ::boost::spirit::qi::phrase_parse;
+    using ::boost::spirit::unicode::space;
 
-sf::Node SearchFilter::buildQuery(const std::string & query) const
+sf::Node SearchFilter::buildQuery(std::string const & query) const
 {
-    auto begin = std::cbegin(query);
-    auto end = std::cend(query);
     sf::Node ast;
 
-    if (!sf::phrase_parse(begin, end, grammar_, sf::space, ast) ||
+    auto begin = std::cbegin(query);
+    auto end = std::cend(query);
+    if (!phrase_parse(begin, end, grammar_, space, ast) ||
         begin != end) {
-        throw std::runtime_error("Failed to build a query '" + query + "'");
+        throw std::runtime_error{"Failed to build a query '" + query + "'"};
     }
 
     return ast;
 }
 
-
-RecordListPtr  SearchFilter::operator()(const sf::Node & ast,
-                                        const RecordList & records,
-                                        sf::Eval::Collator::ECollationStrength strength,
-                                        const sf::Eval::Locale & loc) const
+RecordListPtr SearchFilter::operator()(sf::Node const & ast,
+                                       RecordList const & records,
+                                       sf::Eval::Collator::ECollationStrength strength,
+                                       sf::Eval::Locale const & loc) const
 {
-  return eval_( ast, records, strength, loc );
+    return eval_( ast, records, strength, loc );
 }
 
-RecordListPtr  SearchFilter::operator()(const std::string & query,
-                                        const RecordList & records,
-                                        sf::Eval::Collator::ECollationStrength strength,
-                                        const sf::Eval::Locale & loc) const
+RecordListPtr SearchFilter::operator()(std::string const & query,
+                                       RecordList const & records,
+                                       sf::Eval::Collator::ECollationStrength strength,
+                                       sf::Eval::Locale const & loc) const
 {
-  auto ast = buildQuery(query);
-  return eval_(ast, records, strength, loc);
+    auto ast = buildQuery(query);
+    return eval_(ast, records, strength, loc);
 }
 
 }   // namespace ldap
