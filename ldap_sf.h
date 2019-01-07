@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ldapsf_export.h"
 #include "ldap_sf_grammar.h"
 #include "ldap_sf_eval.h"
 
@@ -7,7 +8,7 @@
 
 namespace  ldap {
 
-class SearchFilter
+class ldapsf_EXPORT SearchFilter
 {
 public:
     sf::Node buildQuery(std::string const & query) const;

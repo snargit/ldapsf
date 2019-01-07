@@ -14,59 +14,57 @@ using namespace icu;
 
 namespace
 {
-  const std::string  col_errmsg( "Failed to create an instance of a collator" );
-  const std::string  stsearch_errmsg( "Failed to create an instance of "
-                                      "a string search object" );
+  std::string const col_errmsg{"Failed to create an instance of a collator"};
+  std::string const stsearch_errmsg{"Failed to create an instance of a string search object"};
 }
-
 
 namespace ldap { namespace sf
 {
 
-Eval::RecordListPartition  Eval::eval( const Node &  node,
-                                       const RecordList &  records,
-                                       Collator::ECollationStrength  strength,
-                                       const Locale &  loc ) const
+Eval::RecordListPartition Eval::eval(Node const & node,
+                                     RecordList const & records,
+                                     Collator::ECollationStrength strength,
+                                     Locale const & loc) const
 {
-  RecordListPartition  res;
-  const Subtree *      subtree( boost::get< Subtree >( &node ) );
+  RecordListPartition res;
+  Subtree const * subtree = boost::get<Subtree>(&node);
 
-  if ( subtree )
+  if (subtree)
   {
-    BOOST_ASSERT( ! subtree->children_.empty() );
-    RecordListPartition  curp;
+    BOOST_ASSERT(!subtree->children_.empty());
+    RecordListPartition curp;
 
-    switch ( subtree->comp_ )
+    switch (subtree->comp_)
     {
     case FC_And:
-      curp = eval( subtree->children_[ 0 ], records, strength, loc );
-      res.second = std::move( curp.second );
-      for ( NodeList::const_iterator
-            k( std::next( subtree->children_.begin() ) );
-            k != subtree->children_.end(); ++k )
-      {
-        curp = eval( *k, *curp.first, strength, loc );
-        res.second->insert( res.second->end(), curp.second->begin(),
-                            curp.second->end() );
+      curp = eval(subtree->children_[ 0 ], records, strength, loc);
+      res.second = std::move(curp.second);
+      for (auto k = std::next(std::cbegin(subtree->children_));
+           k != std::cend(subtree->children_); ++k) {
+        curp = eval(*k, *curp.first, strength, loc);
+        res.second->insert(res.second->end(), curp.second->begin(),
+                           curp.second->end());
       }
-      res.first = std::move( curp.first );
+      res.first = std::move(curp.first);
       break;
     case FC_Or:
-      curp = eval( subtree->children_[ 0 ], records, strength, loc );
-      res.first = std::move( curp.first );
-      for ( NodeList::const_iterator
-            k( std::next( subtree->children_.begin() ) );
-            k != subtree->children_.end(); ++k )
+      curp = eval(subtree->children_[0], records, strength, loc);
+      res.first = std::move(curp.first);
+      for (auto k = std::next(std::cbegin(subtree->children_));
+           k != std::cend(subtree->children_); ++k)
       {
-        curp = eval( *k, *curp.second, strength, loc );
-        res.first->insert( res.first->end(), curp.first->begin(),
-                           curp.first->end() );
+        curp = eval(*k, *curp.second, strength, loc);
+        res.first->insert(res.first->end(), curp.first->begin(),
+                          curp.first->end() );
       }
-      res.second = std::move( curp.second );
+      res.second = std::move(curp.second);
       break;
     case FC_Not:
-      res = eval( subtree->children_[ 0 ], records, strength, loc );
-      std::swap( res.first, res.second );
+      {
+        using std::swap;
+        res = eval(subtree->children_[0], records, strength, loc);
+        swap(res.first, res.second);
+      }
       break;
     default:
       break;
@@ -74,98 +72,89 @@ Eval::RecordListPartition  Eval::eval( const Node &  node,
   }
   else
   {
-    const ItemPtr *  item( boost::get< ItemPtr >( &node ) );
-    if ( item )
-      res = evalItem( *item, records, strength, loc );
+    ItemPtr const * item = boost::get<ItemPtr>(&node);
+    if (item)
+      res = evalItem(*item, records, strength, loc);
   }
 
-  BOOST_ASSERT( res.first && res.second );
+  BOOST_ASSERT(res.first && res.second);
 
   return res;
 }
 
 
-Eval::RecordListPartition Eval::evalItem( const ItemPtr  item,
-                                      const RecordList &  records,
-                                      Collator::ECollationStrength  strength,
-                                      const Locale &  loc ) const
+Eval::RecordListPartition Eval::evalItem(ItemPtr const item,
+                                         RecordList const & records,
+                                         Collator::ECollationStrength strength,
+                                         Locale const & loc) const
 {
-  RecordListPartition   res( std::make_shared< RecordList >(),
-                             std::make_shared< RecordList >() );
+  RecordListPartition res{std::make_shared<RecordList>(),
+                          std::make_shared<RecordList>()};
 
-  switch ( item->type_ )
+  switch (item->type_)
   {
   case IT_Simple:
-    std::partition_copy( records.begin(), records.end(),
-                         std::back_inserter( *res.first ),
-                         std::back_inserter( *res.second ),
-                         [ &item, strength, &loc ]( const RecordPtr &  record )
-                         {
-                           Record::const_iterator  it(
-                                                  record->find( item->attr_ ) );
-                           return ( it == record->end() ? false :
-                                    [ &item, &it, strength, &loc ]( void )
-                                    {
-                                      UErrorCode  status( U_ZERO_ERROR );
-                                      Collator *  col(
-                                          Collator::createInstance( loc,
-                                                                    status ) );
-                                      if ( U_FAILURE( status ) )
-                                        throw std::runtime_error( col_errmsg );
-                                      col->setStrength( strength );
-                                      status = U_ZERO_ERROR;
-                                      UCollationResult
-                                            res( col->compareUTF8(
-                                                  StringPiece( it->second ),
-                                                  StringPiece( item->value_ ),
-                                                  status ) );
-                                      delete col;
-                                      if ( U_FAILURE( status ) )
-                                        return false;
-                                      switch ( item->simple_op_ )
-                                      {
-                                      case SIO_Equal:
-                                      /* approx is implemented as equal! */
-                                      case SIO_Approx:
-                                        return res == UCOL_EQUAL;
-                                      case SIO_Greater:
-                                        return res == UCOL_GREATER ||
-                                               res == UCOL_EQUAL;
-                                      case SIO_Less:
-                                        return res == UCOL_LESS ||
-                                               res == UCOL_EQUAL;
-                                      default:
-                                        return false;
-                                      }
-                                    }()
-                                  );
-                         }
-                       );
+    std::partition_copy(std::begin(records), std::end(records),
+                        std::back_inserter(*res.first),
+                        std::back_inserter(*res.second),
+                        [&item, strength, &loc](RecordPtr const & record)
+                        {
+                            Record::const_iterator it = record->find(item->attr_);
+                            if (it == record->end()) {
+                                return false;
+                            }
+                            UErrorCode status{U_ZERO_ERROR};
+                            std::unique_ptr<Collator> col{Collator::createInstance(loc, status)};
+                            if (U_FAILURE(status)) {
+                                throw std::runtime_error(col_errmsg);
+                            }
+                            col->setStrength(strength);
+                            status = U_ZERO_ERROR;
+                            auto const res = col->compareUTF8(StringPiece(it->second),
+                                                              StringPiece(item->value_),
+                                                              status);
+                            if (U_FAILURE(status)) {
+                                return false;
+                            }
+                            switch (item->simple_op_)
+                            {
+                            case SIO_Equal:
+                                /* approx is implemented as equal! */
+                            case SIO_Approx:
+                                return res == UCOL_EQUAL;
+                            case SIO_Greater:
+                                return res == UCOL_GREATER ||
+                                    res == UCOL_EQUAL;
+                            case SIO_Less:
+                                return res == UCOL_LESS ||
+                                    res == UCOL_EQUAL;
+                            default:
+                                return false;
+                            }
+                        });
     break;
   case IT_Present:
-    std::partition_copy( records.begin(), records.end(),
-                         std::back_inserter( *res.first ),
-                         std::back_inserter( *res.second ),
-                         [ &item ]( const RecordPtr &  record )
-                         {
-                           return record->find( item->attr_ ) != record->end();
-                         }
+    std::partition_copy(std::begin(records), std::end(records),
+                        std::back_inserter(*res.first),
+                        std::back_inserter(*res.second),
+                        [&item](RecordPtr const & record)
+                        {
+                          return record->find(item->attr_) != record->end();
+                        }
                        );
     break;
   case IT_Substring:
-    std::partition_copy( records.begin(), records.end(),
-                         std::back_inserter( *res.first ),
-                         std::back_inserter( *res.second ),
-                         [ &item, strength, &loc, this ](
-                                                    const RecordPtr &  record )
-                         {
-                           Record::const_iterator  it(
-                                                  record->find( item->attr_ ) );
-                           return ( it == record->end() ? false :
-                                    testSubstring( item->values_, it->second,
-                                                   strength, loc )
-                                  );
-                         }
+    std::partition_copy(std::begin(records), std::end(records),
+                        std::back_inserter(*res.first),
+                        std::back_inserter(*res.second),
+                        [&item, strength, &loc, this](const RecordPtr &  record)
+                        {
+                            Record::const_iterator it = record->find(item->attr_);
+                            return it == record->end() ? false :
+                                                         testSubstring(item->values_,
+                                                                       it->second,
+                                                                       strength, loc);
+                        }
                        );
     break;
   default:
@@ -175,13 +164,12 @@ Eval::RecordListPartition Eval::evalItem( const ItemPtr  item,
   return res;
 }
 
-
-bool  Eval::testSubstring( const ValueListMore & values,
-                           const std::string & s,
-                           Collator::ECollationStrength  strength,
-                           const Locale &  loc ) const
+bool Eval::testSubstring(ValueListMore const & values,
+                         std::string const & s,
+                         Collator::ECollationStrength strength,
+                         Locale const & loc) const
 {
-  BOOST_ASSERT( ! values.data_.empty() );
+  BOOST_ASSERT(!values.data_.empty());
 
   auto begin = std::cbegin(values.data_);
   auto end =  std::cend(values.data_);

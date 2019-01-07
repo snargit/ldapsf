@@ -1,4 +1,5 @@
 #pragma once
+#include "ldapsf_export.h"
 
 #include <boost/variant.hpp>
 #include <boost/variant/recursive_variant.hpp>
@@ -68,7 +69,7 @@ struct ValueListMore
 };
 
 
-struct Item
+struct ldapsf_EXPORT Item
 {
     explicit Item(ItemType type) noexcept :
         type_{type},
@@ -94,7 +95,7 @@ struct Item
 };
 
 
-struct Subtree
+struct ldapsf_EXPORT Subtree
 {
     explicit Subtree(FilterComp comp) noexcept:
         comp_{comp}

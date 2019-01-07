@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ldap_sf_ast.h"
+#include "ldapsf_export.h"
 #include "ldap_records.h"
 
 #include <unicode/coll.h>
@@ -12,7 +13,7 @@
 namespace ldap { namespace sf
 {
 
-class Eval
+class ldapsf_EXPORT Eval
 {
   public:
     using Collator = icu::Collator;
@@ -22,32 +23,31 @@ class Eval
     using RecordListPartition = std::pair<RecordListPtr, RecordListPtr>;
 
   public:
-    RecordListPtr  operator()( const Node &  node, const RecordList &  records,
-                               Collator::ECollationStrength strength =
-                                                              Collator::PRIMARY,
-                               const Locale & loc = getDefaultLocale() ) const
+    RecordListPtr operator()(Node const & node, RecordList const & records,
+                             Collator::ECollationStrength strength = Collator::PRIMARY,
+                             Locale const & loc = getDefaultLocale()) const
     {
-      return eval( node, records, strength, loc ).first;
+      return eval(node, records, strength, loc).first;
     }
 
   private:
-    RecordListPartition  eval( const Node &  node,
-                               const RecordList &  records,
-                               Collator::ECollationStrength  strength,
-                               const Locale &  loc ) const;
+    RecordListPartition eval(Node const & node,
+                             RecordList const & records,
+                             Collator::ECollationStrength strength,
+                             Locale const & loc) const;
 
-    RecordListPartition  evalItem( const ItemPtr  item,
-                                   const RecordList &  records,
-                                   Collator::ECollationStrength  strength,
-                                   const Locale &  loc ) const;
+    RecordListPartition evalItem(ItemPtr const item,
+                                 RecordList const & records,
+                                 Collator::ECollationStrength strength,
+                                 Locale const & loc) const;
 
-    bool  testSubstring( const ValueListMore &  values,
-                         const std::string &  s,
-                         Collator::ECollationStrength  strength,
-                         const Locale &  loc ) const;
+    bool testSubstring(ValueListMore const & values,
+                       std::string const & s,
+                       Collator::ECollationStrength strength,
+                       Locale const & loc) const;
 
   public:
-    static const Locale & getDefaultLocale();
+    static Locale const & getDefaultLocale();
 };
 
 }   // namespace sf
