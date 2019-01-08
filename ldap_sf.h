@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace  ldap {
+namespace ldap {
 
     class ldapsf_EXPORT SearchFilter
     {

@@ -5,8 +5,6 @@ include (GenerateExportHeader)
 set(name ldapsf)
 project(${name})
 
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
-
 find_package(Boost 1.47 REQUIRED)
 find_package(ICU REQUIRED COMPONENTS uc i18n)
 
@@ -30,7 +28,7 @@ ADD_COMPILER_EXPORT_FLAGS()
 
 target_link_libraries(${name} ${ICU_LIBRARIES})
 
-install(TARGETS ${name} DESTINATION lib})
+install(TARGETS ${name} DESTINATION lib)
 install(FILES ldap_sf_ast.h
               ldap_sf_grammar.h
               ldap_sf_eval.h

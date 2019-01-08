@@ -3,7 +3,6 @@
 #define BOOST_SPIRIT_UNICODE
 #endif
 
-#include "ldapsf_export.h"
 #include "ldap_sf_ast.h"
 
 #include <boost/optional.hpp>
@@ -23,7 +22,7 @@ namespace  ldap {
         using namespace boost::spirit::qi;
         using namespace boost::spirit::unicode;
 
-        struct ldapsf_EXPORT Compiler
+        struct Compiler
         {
             template <typename A,
                       typename B = ::boost::spirit::unused_type,
