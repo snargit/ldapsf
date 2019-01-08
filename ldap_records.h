@@ -7,8 +7,7 @@
 #include <utility>
 #include <vector>
 
-namespace  ldap
-{
+namespace ldap {
     using Record = std::map<std::string, std::string>;
     using RecordPtr = std::shared_ptr<Record>;
     using RecordList = std::vector<RecordPtr>;
@@ -17,17 +16,17 @@ namespace  ldap
 
 
 inline std::ostream & operator<<(std::ostream & out,
-                                 const ldap::RecordPtr & record)
+                                 ldap::RecordPtr const & record)
 {
-  out << "\n";
+    out << "\n";
 
-  if (!record) {
-      out << "<null>";
-  }
+    if (!record) {
+        out << "<null>";
+    }
 
-  for (auto const & k : *record) {
-      out << k.first << ": " << k.second << std::endl;
-  }
+    for (auto const & k : *record) {
+        out << k.first << ": " << k.second << std::endl;
+    }
 
-  return out;
+    return out;
 }
