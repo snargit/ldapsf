@@ -53,8 +53,8 @@ namespace  ldap {
 
         template<typename Iterator>
         struct Grammar : grammar<Iterator,
-            Node(),
-            boost::spirit::unicode::space_type>
+                                 Node(),
+                                 boost::spirit::unicode::space_type>
         {
             using NodeRule = ::boost::spirit::qi::rule<Iterator,
                                                        Node(),
