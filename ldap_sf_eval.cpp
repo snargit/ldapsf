@@ -26,7 +26,7 @@ namespace ldap {
                                              Locale const & loc) const
         {
             RecordListPartition res;
-            Subtree const * subtree = boost::get<Subtree>(&node);
+            auto subtree = boost::get<Subtree>(&node);
 
             if (subtree) {
                 BOOST_ASSERT(!subtree->children_.empty());
@@ -66,9 +66,10 @@ namespace ldap {
                     break;
                 }
             } else {
-                ItemPtr const * item = boost::get<ItemPtr>(&node);
-                if (item)
+                auto item = boost::get<ItemPtr>(&node);
+                if (item) {
                     res = evalItem(*item, records, strength, loc);
+                }
             }
 
             BOOST_ASSERT(res.first && res.second);
@@ -172,7 +173,7 @@ namespace ldap {
                 StringSearch it(vu, su, loc, nullptr, status);
 
                 if (U_FAILURE(status)) {
-                    throw std::runtime_error(stsearch_errmsg);
+                    throw std::runtime_error{stsearch_errmsg};
                 }
 
                 it.getCollator()->setStrength(strength);
@@ -218,7 +219,7 @@ namespace ldap {
                 StringSearch it(vu, UnicodeString{su, pos, len}, loc, nullptr, status);
 
                 if (U_FAILURE(status)) {
-                    throw std::runtime_error(stsearch_errmsg);
+                    throw std::runtime_error{stsearch_errmsg};
                 }
 
                 it.getCollator()->setStrength(strength);
