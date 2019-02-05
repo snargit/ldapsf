@@ -1,28 +1,6 @@
-/*
- * =============================================================================
- *
- *       Filename:  test.cpp
- *
- *    Description:  test
- *
- *        Version:  1.0
- *        Created:  18.02.2015 18:28:33
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexey Radkov (), 
- *        Company:  
- *        Compile:  g++ -Wall -std=c++11 -I/usr/include/jsoncpp -o test \
- *                  test.cpp -lldapsf -ljsoncpp
- *
- * =============================================================================
- */
-
 #include <string>
 #include <ldapsf/ldap_records.h>
 #include <ldapsf/ldap_sf.h>
-#include <json/json.h>
-#include <fstream>
 
 #include <iostream>
 
@@ -42,7 +20,7 @@ void  printQuery( const Node &  tree )
   }
   else
   {
-    const ItemPtr *  item( boost::get< ItemPtr >( &tree ) );
+    const ItemPtr *  item( boost::get<ItemPtr>( &tree ) );
     if ( item )
       ( *item )->print();
   }
@@ -51,24 +29,28 @@ void  printQuery( const Node &  tree )
 
 int  main( void )
 {
-  Json::Value        root;
-  Json::Value        dummy;
-  std::ifstream      stream( "records.json", std::ifstream::binary );
   RecordList         records;
 
-  stream >> root;
+    Record  r{{"name", "Семён"},
+                {"sname", "Иванов"},
+                {"grade", "5"},
+                {"extra", "M"}};
+    Record  r2{{"name", "Виталий"},{"sname", "Полищук"}};
+    Record  r3{{"name", "Пламен"},{"sname" , "Стоянов"},{"grade" , "5"}};
+    Record  r4{{"name", "Семён"},{"sname" , "Степанов"}};
+    Record  r5{{"name", "Семён"},{"sname" , "Пирогов"},{"grade" , "3"}};
+    Record  r6{{"name", "Света"},{"sname"},{"Соколова"},{"grade" , "3"},{"extra" , "P"}};
+    Record  r7{{"name", "Дементий"},{"sname" , "Порохов"},{"grade" , "2"}};
+    Record  r8{{"name", "Лукьян"},{"sname" , "Чудинов"},{"grade" , "4"}};
 
-  const Json::Value &  data( root.get( "data", dummy ) );
-
-  for ( unsigned int  i( 0 ); i < data.size(); ++i )
-  {
-    Record  r;
-
-    for ( auto  k: data[ i ].getMemberNames() )
-      r.insert( Record::value_type( k, data[ i ][ k ].asString() ) );
-
-    records.emplace_back( std::make_shared< Record >( std::move( r ) ) );
-  }
+    records.insert(r);
+    records.insert(r2);
+    records.insert(r3);
+    records.insert(r4);
+    records.insert(r5);
+    records.insert(r6);
+    records.insert(r7);
+    records.insert(r8);
 
   std::cout << ">>> Data";
 

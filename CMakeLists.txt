@@ -11,7 +11,7 @@ find_package(ICU REQUIRED COMPONENTS uc i18n)
 include_directories(${Boost_INCLUDE_DIRS}
                     ${ICU_INCLUDE_DIRS}
                     ${CMAKE_CURRENT_SOURCE_DIR}
-					${PROJECT_BINARY_DIR})
+                    ${PROJECT_BINARY_DIR})
 
 add_library(${name} SHARED ldap_sf_ast.cpp 
                            ldap_sf_grammar.cpp 
@@ -36,7 +36,7 @@ install(FILES ldap_sf_ast.h
               ldap_sf.h
               ldap_sf_ptr.h
               ${PROJECT_BINARY_DIR}/${name}_export.h
-			  DESTINATION include/ldapsf)
+              DESTINATION include/ldapsf)
 
 set(CPACK_PACKAGE_NAME "libldapsf")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "LDAP Search Filter library")
