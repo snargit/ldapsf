@@ -120,9 +120,9 @@ namespace  ldap {
 
             filterlist = +(filter[op(_val, _1)]);
 
-            and_expr = lit('&') >> filterlist[op(_val, _1, FC_And)];
+            and_expr = lit('&') >> filterlist[op(_val, _1, FilterComp::And)];
 
-            or_expr = lit('|') >> filterlist[op(_val, _1, FC_Or)];
+            or_expr = lit('|') >> filterlist[op(_val, _1, FilterComp::Or)];
 
             not_expr = lit('!') >> filter[op(_val, _1)];
 
@@ -136,10 +136,10 @@ namespace  ldap {
 
             value = +(lit('\\') >> (hex_8 | hex_2) | (char_ - '*' - ')'));
 
-            filtertype = lit('=')[_val = SIO_Equal] |
-                lit("~=")[_val = SIO_Approx] |
-                lit(">=")[_val = SIO_Greater] |
-                lit("<=")[_val = SIO_Less];
+            filtertype = lit('=')[_val = SimpleItemOp::Equal] |
+                lit("~=")[_val = SimpleItemOp::Approx] |
+                lit(">=")[_val = SimpleItemOp::Greater] |
+                lit("<=")[_val = SimpleItemOp::Less];
 
             substring = (attr >> lit('=') >> values)[op(_val, _1, _2)];
 

@@ -12,30 +12,30 @@
 namespace ldap {
     namespace sf {
 
-        enum FilterComp
+        enum class FilterComp
         {
-            FC_Uninitialized,
-            FC_And,
-            FC_Or,
-            FC_Not
+            Uninitialized,
+            And,
+            Or,
+            Not
         };
 
-        enum ItemType
+        enum class ItemType
         {
-            IT_Unknown,
-            IT_Simple,
-            IT_Present,
-            IT_Substring,
-            IT_Extensible
+            Unknown,
+            Simple,
+            Present,
+            Substring,
+            Extensible
         };
 
-        enum SimpleItemOp
+        enum class SimpleItemOp
         {
-            SIO_Uninitialized,
-            SIO_Equal,
-            SIO_Approx,
-            SIO_Greater,
-            SIO_Less
+            Uninitialized,
+            Equal,
+            Approx,
+            Greater,
+            Less
         };
 
         struct Subtree;
@@ -73,10 +73,10 @@ namespace ldap {
         {
             explicit Item(ItemType type) noexcept :
                 type_{type},
-                simple_op_{SIO_Uninitialized}
+                simple_op_{SimpleItemOp::Uninitialized}
             {}
 
-            Item() noexcept : Item(IT_Unknown)
+            Item() noexcept : Item(ItemType::Unknown)
             {}
 
             Item(Item const &) = default;
@@ -101,7 +101,7 @@ namespace ldap {
                 comp_{comp}
             {}
 
-            Subtree() noexcept : Subtree(FC_Uninitialized)
+            Subtree() noexcept : Subtree(FilterComp::Uninitialized)
             {}
 
             Subtree(Subtree const &) = default;

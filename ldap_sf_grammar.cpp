@@ -24,7 +24,7 @@ namespace  ldap {
 
         void Compiler::operator()(Node & node, Node & nodeNest) const
         {
-            node = Subtree{FC_Not};
+            node = Subtree{FilterComp::Not};
             auto & tree = boost::get<Subtree>(node);
             tree.children_.emplace_back(std::move(nodeNest));
         }
@@ -32,7 +32,7 @@ namespace  ldap {
         void Compiler::operator()(ItemPtr & item, AttrOptionsList & attrs,
                                   SimpleItemOp op, Value & value) const
         {
-            item = std::make_shared<Item>(IT_Simple);
+            item = std::make_shared<Item>(ItemType::Simple);
             item->attr_ = std::move(attrs.front());
             std::move(std::next(std::begin(attrs)), attrs.end(),
                       std::back_inserter(item->attr_ops_));
@@ -54,7 +54,7 @@ namespace  ldap {
         void Compiler::operator()(ItemPtr & item, AttrOptionsList & attrs,
                                   ValueListMore & values) const
         {
-            item = std::make_shared<Item>(values.data_.empty() ? IT_Present : IT_Substring);
+            item = std::make_shared<Item>(values.data_.empty() ? ItemType::Present : ItemType::Substring);
             item->attr_ = std::move(attrs.front());
             std::move(std::next(std::begin(attrs)), std::end(attrs),
                       std::back_inserter(item->attr_ops_));

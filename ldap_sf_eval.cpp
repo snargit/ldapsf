@@ -33,7 +33,7 @@ namespace ldap {
                 RecordListPartition curp;
 
                 switch (subtree->comp_) {
-                case FC_And:
+                case FilterComp::And:
                     curp = eval(subtree->children_[0], records, strength, loc);
                     res.second = std::move(curp.second);
                     for (auto k = std::next(std::cbegin(subtree->children_));
@@ -44,7 +44,7 @@ namespace ldap {
                     }
                     res.first = std::move(curp.first);
                     break;
-                case FC_Or:
+                case FilterComp::Or:
                     curp = eval(subtree->children_[0], records, strength, loc);
                     res.first = std::move(curp.first);
                     for (auto k = std::next(std::cbegin(subtree->children_));
@@ -55,7 +55,7 @@ namespace ldap {
                     }
                     res.second = std::move(curp.second);
                     break;
-                case FC_Not:
+                case FilterComp::Not:
                     {
                         using std::swap;
                         res = eval(subtree->children_[0], records, strength, loc);
@@ -86,7 +86,7 @@ namespace ldap {
                                     std::make_shared<RecordList>()};
 
             switch (item->type_) {
-            case IT_Simple:
+            case ItemType::Simple:
                 std::partition_copy(std::begin(records), std::end(records),
                                     std::back_inserter(*res.first),
                                     std::back_inserter(*res.second),
@@ -110,14 +110,14 @@ namespace ldap {
                                             return false;
                                         }
                                         switch (item->simple_op_) {
-                                        case SIO_Equal:
+                                        case SimpleItemOp::Equal:
                                             /* approx is implemented as equal! */
-                                        case SIO_Approx:
+                                        case SimpleItemOp::Approx:
                                             return res == UCOL_EQUAL;
-                                        case SIO_Greater:
+                                        case SimpleItemOp::Greater:
                                             return res == UCOL_GREATER ||
                                                 res == UCOL_EQUAL;
-                                        case SIO_Less:
+                                        case SimpleItemOp::Less:
                                             return res == UCOL_LESS ||
                                                 res == UCOL_EQUAL;
                                         default:
@@ -125,7 +125,7 @@ namespace ldap {
                                         }
                                     });
                 break;
-            case IT_Present:
+            case ItemType::Present:
                 std::partition_copy(std::begin(records), std::end(records),
                                     std::back_inserter(*res.first),
                                     std::back_inserter(*res.second),
@@ -134,7 +134,7 @@ namespace ldap {
                                         return record->find(item->attr_) != record->end();
                                     });
                 break;
-            case IT_Substring:
+            case ItemType::Substring:
                 std::partition_copy(std::begin(records), std::end(records),
                                     std::back_inserter(*res.first),
                                     std::back_inserter(*res.second),

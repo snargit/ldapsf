@@ -7,7 +7,26 @@
 #include <string>
 
 #include <boost/format.hpp>
-#include <boost/variant/get.hpp>
+#include <boost/variant/static_visitor.hpp>
+
+namespace {
+    struct NodeVisitor : ::boost::static_visitor<void>
+    {
+        int _level;
+
+        NodeVisitor(int level) : _level{ level } {}
+
+        void operator()(ldap::sf::Subtree const& s) const
+        {
+            s.print(_level + 1);
+        }
+
+        void operator()(ldap::sf::ItemPtr const& p) const
+        {
+            p->print(_level + 1);
+        }
+    };
+}
 
 
 namespace  ldap {
@@ -19,23 +38,17 @@ namespace  ldap {
 
             std::stringstream value;
 
-            value << op_id[comp_];
+            value << op_id[static_cast<size_t>(comp_)];
 
             std::stringstream format;
 
             format << "%|" << level * print_indent_ << "t|";
             std::cout << boost::format(format.str()) << value.str() << std::endl;
 
+            NodeVisitor v{ level };
+
             for (auto const & k : children_) {
-                auto subtree = boost::get<Subtree>(&k);
-                if (subtree) {
-                    subtree->print(level + 1);
-                } else {
-                    auto item = boost::get<ItemPtr>(&k);
-                    if (item) {
-                        (*item)->print(level + 1);
-                    }
-                }
+                ::boost::apply_visitor(v, k);
             }
         }
 
@@ -44,14 +57,14 @@ namespace  ldap {
             std::stringstream value;
 
             switch (type_) {
-            case IT_Simple:
+            case ItemType::Simple:
                 {
                     static std::array<std::string, 5> const op_id = {"UNINITIALIZED", "=", "~=", ">=", "<="};
-                    value << op_id[simple_op_];
+                    value << op_id[static_cast<size_t>(simple_op_)];
                 }
                 break;
-            case IT_Present:
-            case IT_Substring:
+            case ItemType::Present:
+            case ItemType::Substring:
                 value << "*";
                 break;
             default:
@@ -70,10 +83,10 @@ namespace  ldap {
             }
 
             switch (type_) {
-            case IT_Simple:
+            case ItemType::Simple:
                 value << "  |  " << value_;
                 break;
-            case IT_Substring:
+            case ItemType::Substring:
                 value << "  |  ";
                 if (values_.has_front_any_)
                     value << "* ";
