@@ -7,6 +7,7 @@
 #include <string>
 
 #include <boost/format.hpp>
+#include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 
 namespace {

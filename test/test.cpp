@@ -1,35 +1,41 @@
-#include <string>
 #include <ldapsf/ldap_records.h>
 #include <ldapsf/ldap_sf.h>
 
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
+
 #include <iostream>
+#include <string>
 
 using namespace  ldap;
 using namespace  ldap::sf;
 
+namespace {
+    struct PrintVisitor : ::boost::static_visitor<void>
+    {
+        void operator()(ldap::sf::Subtree const& s) const
+        {
+            s.print();
+        }
 
-void  printQuery( const Node &  tree )
-{
-  const Subtree *    subtree( boost::get< Subtree >( &tree ) );
+        void operator()(ldap::sf::ItemPtr const& p) const
+        {
+            p->print();
+        }
+    };
 
-  std::cout << std::endl << ">>> Query" << std::endl;
+    void printQuery(ldap::sf::Node const & tree)
+    {
+        std::cout << "\n>>> Query" << std::endl;
+        ::boost::apply_visitor(PrintVisitor{}, tree);
+    }
 
-  if ( subtree )
-  {
-    subtree->print();
-  }
-  else
-  {
-    const ItemPtr *  item( boost::get<ItemPtr>( &tree ) );
-    if ( item )
-      ( *item )->print();
-  }
 }
 
 
-int  main( void )
+int main(void)
 {
-  RecordList         records;
+    RecordList         records;
 
     Record  r{{"name", "Семён"},
                 {"sname", "Иванов"},
