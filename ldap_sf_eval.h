@@ -15,6 +15,8 @@ namespace ldap {
 
         class ldapsf_EXPORT Eval
         {
+            friend struct NodeVisitor;
+
         public:
             using Collator = icu::Collator;
             using Locale = icu::Locale;

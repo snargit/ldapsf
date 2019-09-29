@@ -6,7 +6,9 @@
 #include <utility>
 
 #include <boost/assert.hpp>
-#include <boost/variant/get.hpp>
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
+
 #include <unicode/locid.h>
 #include <unicode/stsearch.h>
 
@@ -20,57 +22,75 @@ namespace {
 namespace ldap {
     namespace sf {
 
-        Eval::RecordListPartition Eval::eval(Node const & node,
-                                             RecordList const & records,
-                                             Collator::ECollationStrength strength,
-                                             Locale const & loc) const
+        struct NodeVisitor : ::boost::static_visitor<ldap::sf::Eval::RecordListPartition>
         {
-            RecordListPartition res;
-            auto subtree = boost::get<Subtree>(&node);
+            RecordList const& records;
+            Collator::ECollationStrength strength;
+            Locale const& loc;
+            Eval const & _eval;
 
-            if (subtree) {
-                BOOST_ASSERT(!subtree->children_.empty());
-                RecordListPartition curp;
+            NodeVisitor(RecordList const &rl, Collator::ECollationStrength s, Locale const &l, Eval const &e)
+                : records{rl}
+                , strength{s}
+                , loc{l}
+                , _eval{e}
+            {}
 
-                switch (subtree->comp_) {
+            Eval::RecordListPartition operator()(ldap::sf::Subtree const& s) const
+            {
+                BOOST_ASSERT(!s.children_.empty());
+
+                Eval::RecordListPartition res;
+                Eval::RecordListPartition curp;
+
+                switch (s.comp_) {
                 case FilterComp::And:
-                    curp = eval(subtree->children_[0], records, strength, loc);
+                    curp = _eval.eval(s.children_[0], records, strength, loc);
                     res.second = std::move(curp.second);
-                    for (auto k = std::next(std::cbegin(subtree->children_));
-                         k != std::cend(subtree->children_); ++k) {
-                        curp = eval(*k, *curp.first, strength, loc);
+                    for (auto k = std::next(std::cbegin(s.children_));
+                         k != std::cend(s.children_); ++k) {
+                        curp = _eval.eval(*k, *curp.first, strength, loc);
                         res.second->insert(res.second->end(), curp.second->begin(),
-                                           curp.second->end());
+                            curp.second->end());
                     }
                     res.first = std::move(curp.first);
                     break;
                 case FilterComp::Or:
-                    curp = eval(subtree->children_[0], records, strength, loc);
+                    curp = _eval.eval(s.children_[0], records, strength, loc);
                     res.first = std::move(curp.first);
-                    for (auto k = std::next(std::cbegin(subtree->children_));
-                         k != std::cend(subtree->children_); ++k) {
-                        curp = eval(*k, *curp.second, strength, loc);
+                    for (auto k = std::next(std::cbegin(s.children_));
+                        k != std::cend(s.children_); ++k) {
+                        curp = _eval.eval(*k, *curp.second, strength, loc);
                         res.first->insert(res.first->end(), curp.first->begin(),
-                                          curp.first->end());
+                            curp.first->end());
                     }
                     res.second = std::move(curp.second);
                     break;
                 case FilterComp::Not:
                     {
                         using std::swap;
-                        res = eval(subtree->children_[0], records, strength, loc);
+                        res = _eval.eval(s.children_[0], records, strength, loc);
                         swap(res.first, res.second);
                     }
                     break;
                 default:
                     break;
                 }
-            } else {
-                auto item = boost::get<ItemPtr>(&node);
-                if (item) {
-                    res = evalItem(*item, records, strength, loc);
-                }
+                return res;
             }
+
+            ldap::sf::Eval::RecordListPartition operator()(ldap::sf::ItemPtr const& p) const
+            {
+                return _eval.evalItem(p, records, strength, loc);
+            }
+        };
+
+        Eval::RecordListPartition Eval::eval(Node const & node,
+                                             RecordList const & records,
+                                             Collator::ECollationStrength strength,
+                                             Locale const & loc) const
+        {
+            auto res = ::boost::apply_visitor(NodeVisitor{records, strength, loc, *this}, node);
 
             BOOST_ASSERT(res.first && res.second);
 
